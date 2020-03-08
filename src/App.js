@@ -1,6 +1,46 @@
 import React, { Component } from 'react';
 import './App.css';
 import { fetchPokemon } from './data';
+import { useTable } from 'react-table';
+
+function Table({ columns, data }) {
+    const {
+        getTableProps,
+        getTableBodyProps,
+        headerGroups,
+        rows,
+        prepareRow
+    } = useTable({
+        columns,
+        data,
+    });
+
+    return (
+        <table {...getTableProps()}>
+            <thead>
+                {headerGroups.map(headerGroup => (
+                    <tr {...headerGroup.getHeaderGroupProps()}>
+                        {headerGroup.headers.map(column => (
+                            <th {...column.getHeaderProps()}>{column.render('Header')}</th>
+                        ))}
+                    </tr>
+                ))}
+            </thead>
+            <tbody {...getTableBodyProps()}>
+                {rows.map((row, i) => {
+                    prepareRow(row)
+                    return (
+                        <tr {...row.getRowProps()}>
+                            {row.cells.map(cell => {
+                                return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
+                            })}
+                        </tr>
+                    )
+                })}
+            </tbody>
+        </table>
+    )
+}
 
 class App extends Component {
     constructor(props) {
@@ -22,15 +62,31 @@ class App extends Component {
     render() {
         const { pokemon } = this.state;
 
-        const pokemonElements = pokemon.map((x) => (<li>{x.num} {x.name} {x.type} {x.weaknesses}</li>))
+        const columns = [{
+            Header: 'Pokedex',
+            columns: [
+                {
+                    Header: 'num',
+                    accessor: 'num',
+                },
+                {
+                    Header: 'name',
+                    accessor: 'name',
+                },
+                {
+                    Header: 'type',
+                    accessor: 'type',
+                },
+                {
+                    Header: 'weaknesses',
+                    accessor: 'weaknesses',
+                },
+            ],
+        }];
 
         return (
-            <div className="App"> 
-                <ul>
-                    {pokemonElements}
-                </ul>
-            </div>
-        );
+            <Table columns={columns} data={pokemon} />
+        )
     }
 }
 
