@@ -1,135 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
-import { fetchPokemon } from './data';
-import { useTable } from 'react-table';
-
-const COLUMNS = [{
-    Header: 'Pokedex',
-    columns: [
-        {
-            Header: 'num',
-            accessor: 'num',
-        },
-        {
-            Header: 'name',
-            accessor: 'name',
-        },
-        {
-            Header: 'type',
-            accessor: 'type',
-        },
-        {
-            Header: 'weaknesses',
-            accessor: 'weaknesses',
-        },
-    ],
-}];
-
-function Table({ columns, data }) {
-    const {
-        getTableProps,
-        getTableBodyProps,
-        headerGroups,
-        rows,
-        prepareRow
-    } = useTable({
-        columns,
-        data,
-    });
-
-    return (
-        <table {...getTableProps()}>
-            <thead>
-                {headerGroups.map(headerGroup => (
-                    <tr {...headerGroup.getHeaderGroupProps()}>
-                        {headerGroup.headers.map(column => (
-                            <th {...column.getHeaderProps()}>{column.render('Header')}</th>
-                        ))}
-                    </tr>
-                ))}
-            </thead>
-            <tbody {...getTableBodyProps()}>
-                {rows.map((row, i) => {
-                    prepareRow(row)
-                    return (
-                        <tr {...row.getRowProps()}>
-                            {row.cells.map(cell => {
-                                return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
-                            })}
-                        </tr>
-                    )
-                })}
-            </tbody>
-        </table>
-    )
-}
-
-function getTypesAndWeaknesses(pokemon) {
-    const totalTypes = {};
-    const totalWeaknesses = {};
-    let type = [];
-    let weaknesses = [];
-    let poke = {};
-
-    for (let i = 0; i < pokemon.length; i++) {
-        poke = pokemon[i];
-        type = poke.type;
-        weaknesses = poke.weaknesses;
-
-        for (let j = 0; j < type.length; j++) {
-            if (!(type[j] in totalTypes)) {
-                totalTypes[type[j]] = false;
-            }
-        }
-
-        for (let j = 0; j < weaknesses.length; j++) {
-            if (!(weaknesses in totalWeaknesses)) {
-                totalWeaknesses[weaknesses[j]] = false;
-            }
-        }
-    }
-
-    return {
-        types: totalTypes,
-        weaknesses: totalWeaknesses,
-    }
-}
-
-function Filters({ handleCheckboxChange, handleTextBoxChange, types, weaknesses }) {
-    const typeCheckboxes = Object.keys(types).map((type) => (
-        <label>
-            {type}:
-            <input
-                type='checkbox'
-                name={type}
-                onChange={(e) => { handleCheckboxChange(e, 'types') }} />
-        </label>
-    ));
-
-    const weaknessCheckboxes = Object.keys(weaknesses).map((weakness) => (
-        <label>
-            {weakness}:
-            <input
-                type='checkbox'
-                name={weakness}
-                onChange={(e) => { handleCheckboxChange(e, 'weaknesses') }} />
-        </label>
-    ));
-
-    return (
-        <form>
-            <label>
-                name:
-                <input
-                    type='text'
-                    name='name'
-                    onChange={handleTextBoxChange} />
-            </label>
-            {typeCheckboxes}
-            {weaknessCheckboxes}
-        </form>
-    )
-}
+import { Table, Filters } from './components';
+import { getTypesAndWeaknesses, fetchPokemon } from './helpers';
 
 class App extends Component {
     constructor(props) {
@@ -221,7 +93,7 @@ class App extends Component {
                     handleTextBoxChange={this.handleTextBoxChange}
                     types={types}
                     weaknesses={weaknesses} />
-                <Table columns={COLUMNS} data={filteredPokemon} />
+                <Table data={filteredPokemon} />
             </div>
         )
     }
