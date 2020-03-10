@@ -1,62 +1,29 @@
 import React from 'react';
-import { useTable } from 'react-table';
 
-const COLUMNS = [{
-    Header: 'Pokedex',
-    columns: [
-        {
-            Header: 'num',
-            accessor: 'num',
-        },
-        {
-            Header: 'name',
-            accessor: 'name',
-        },
-        {
-            Header: 'type',
-            accessor: 'type',
-        },
-        {
-            Header: 'weaknesses',
-            accessor: 'weaknesses',
-        },
-    ],
-}];
+const COLUMNS = ['id', 'name', 'type', 'weaknesses'];
 
 function Table({ data }) {
-    const {
-        getTableProps,
-        getTableBodyProps,
-        headerGroups,
-        rows,
-        prepareRow
-    } = useTable({
-        columns: COLUMNS,
-        data,
-    });
+    let keyCounter = 0;
+
+    const headers = (
+        <tr>
+            {COLUMNS.map((column) => <th key={keyCounter++}>{column}</th>)}
+        </tr>
+    )
+
+    const rows = data.map((row) => (
+        <tr key={keyCounter++}>
+            {COLUMNS.map((column) => <td key={keyCounter++}>{row[column]}</td>)}
+        </tr>
+    ));
 
     return (
-        <table {...getTableProps()}>
+        <table>
             <thead>
-                {headerGroups.map(headerGroup => (
-                    <tr {...headerGroup.getHeaderGroupProps()}>
-                        {headerGroup.headers.map(column => (
-                            <th {...column.getHeaderProps()}>{column.render('Header')}</th>
-                        ))}
-                    </tr>
-                ))}
+                {headers}
             </thead>
-            <tbody {...getTableBodyProps()}>
-                {rows.map((row, i) => {
-                    prepareRow(row)
-                    return (
-                        <tr {...row.getRowProps()}>
-                            {row.cells.map(cell => {
-                                return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
-                            })}
-                        </tr>
-                    )
-                })}
+            <tbody>
+                {rows}
             </tbody>
         </table>
     )
