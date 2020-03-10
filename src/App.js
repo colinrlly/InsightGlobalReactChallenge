@@ -3,6 +3,28 @@ import './App.css';
 import { fetchPokemon } from './data';
 import { useTable } from 'react-table';
 
+const COLUMNS = [{
+    Header: 'Pokedex',
+    columns: [
+        {
+            Header: 'num',
+            accessor: 'num',
+        },
+        {
+            Header: 'name',
+            accessor: 'name',
+        },
+        {
+            Header: 'type',
+            accessor: 'type',
+        },
+        {
+            Header: 'weaknesses',
+            accessor: 'weaknesses',
+        },
+    ],
+}];
+
 function Table({ columns, data }) {
     const {
         getTableProps,
@@ -47,8 +69,11 @@ class App extends Component {
         super(props);
 
         this.state = {
+            query: '',
             pokemon: [],
         }
+
+        this.handleChange = this.handleChange.bind(this);
     }
 
     componentDidMount() {
@@ -59,33 +84,32 @@ class App extends Component {
         });
     }
 
-    render() {
-        const { pokemon } = this.state;
+    handleChange(event) {
+        const { name, value } = event.target;
 
-        const columns = [{
-            Header: 'Pokedex',
-            columns: [
-                {
-                    Header: 'num',
-                    accessor: 'num',
-                },
-                {
-                    Header: 'name',
-                    accessor: 'name',
-                },
-                {
-                    Header: 'type',
-                    accessor: 'type',
-                },
-                {
-                    Header: 'weaknesses',
-                    accessor: 'weaknesses',
-                },
-            ],
-        }];
+        this.setState({
+            [name]: value,
+        });
+    }
+
+    getFilteredPokemon() {
+        const { query, pokemon } = this.state;
+
+        return pokemon.filter((x) => x.name.toLowerCase().includes(query));
+    }
+
+    render() {
+        const pokemon = this.getFilteredPokemon();
 
         return (
-            <Table columns={columns} data={pokemon} />
+            <div>
+                <input
+                    type='text'
+                    name='query'
+                    value={this.state.query}
+                    onChange={this.handleChange} />
+                <Table columns={COLUMNS} data={pokemon} />
+            </div>
         )
     }
 }
