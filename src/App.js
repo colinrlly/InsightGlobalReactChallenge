@@ -3,6 +3,8 @@ import './App.css';
 import { Table, Filters } from './components';
 import { getTypesAndWeaknesses, fetchPokemon } from './helpers';
 
+const COLUMNS = ['id', 'name', 'type', 'weaknesses'];
+
 class App extends Component {
     constructor(props) {
         super(props);
@@ -93,7 +95,7 @@ class App extends Component {
                     handleTextBoxChange={this.handleTextBoxChange}
                     types={types}
                     weaknesses={weaknesses} />
-                <Table data={filteredPokemon} />
+                <Table data={filteredPokemon} columns={COLUMNS} />
             </div>
         )
     }
