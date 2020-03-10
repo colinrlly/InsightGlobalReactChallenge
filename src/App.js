@@ -64,27 +64,101 @@ function Table({ columns, data }) {
     )
 }
 
+function getTypesAndWeaknesses(pokemon) {
+    const totalTypes = {};
+    const totalWeaknesses = {};
+    let type = [];
+    let weaknesses = [];
+    let poke = {};
+
+    for (let i = 0; i < pokemon.length; i++) {
+        poke = pokemon[i];
+        type = poke.type;
+        weaknesses = poke.weaknesses;
+
+        for (let j = 0; j < type.length; j++) {
+            if (!(type[j] in totalTypes)) {
+                totalTypes[type[j]] = false;
+            }
+        }
+
+        for (let j = 0; j < weaknesses.length; j++) {
+            if (!(weaknesses in totalWeaknesses)) {
+                totalWeaknesses[weaknesses[j]] = false;
+            }
+        }
+    }
+
+    return {
+        types: totalTypes,
+        weaknesses: totalWeaknesses,
+    }
+}
+
+function Filters({ handleCheckboxChange, handleTextBoxChange, types, weaknesses }) {
+    const typeCheckboxes = Object.keys(types).map((type) => (
+        <label>
+            {type}:
+            <input
+                type='checkbox'
+                name={type}
+                onChange={(e) => { handleCheckboxChange(e, 'types') }} />
+        </label>
+    ));
+
+    const weaknessCheckboxes = Object.keys(weaknesses).map((weakness) => (
+        <label>
+            {weakness}:
+            <input
+                type='checkbox'
+                name={weakness}
+                onChange={(e) => { handleCheckboxChange(e, 'weaknesses') }} />
+        </label>
+    ));
+
+    return (
+        <form>
+            <label>
+                name:
+                <input
+                    type='text'
+                    name='name'
+                    onChange={handleTextBoxChange} />
+            </label>
+            {typeCheckboxes}
+            {weaknessCheckboxes}
+        </form>
+    )
+}
+
 class App extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            query: '',
+            name: '',
+            types: {},
+            weaknesses: {},
             pokemon: [],
         }
 
-        this.handleChange = this.handleChange.bind(this);
+        this.handleTextBoxChange = this.handleTextBoxChange.bind(this);
+        this.handleCheckboxChange = this.handleCheckboxChange.bind(this);
     }
 
-    componentDidMount() {
+    componentWillMount() {
         fetchPokemon().then((data) => {
+            const { types, weaknesses } = getTypesAndWeaknesses(data);
+
             this.setState({
                 pokemon: data,
+                types,
+                weaknesses,
             })
         });
     }
 
-    handleChange(event) {
+    handleTextBoxChange(event) {
         const { name, value } = event.target;
 
         this.setState({
@@ -92,23 +166,62 @@ class App extends Component {
         });
     }
 
-    getFilteredPokemon() {
-        const { query, pokemon } = this.state;
+    handleCheckboxChange(event, filterName) {
+        const filter = this.state[filterName];
+        const { name } = event.target;
 
-        return pokemon.filter((x) => x.name.toLowerCase().includes(query));
+        filter[name] = !filter[name];
+
+        this.setState({
+            [filterName]: filter,
+        });
+    }
+
+    getFilteredPokemon() {
+        const { name, pokemon, types, weaknesses } = this.state;
+        let containsTypes;
+        let containsWeaknesses;
+
+        const selectedTypes = Object.keys(types).filter((x) => types[x]);
+        const selectedWeaknesses = Object.keys(weaknesses).filter((x) => weaknesses[x]);
+
+        return pokemon.filter((poke) => {
+            let containsTypes = true;
+            let containsWeaknesses = true;
+
+            for (let i = 0; i < selectedTypes.length; i++) {
+                if (!poke.type.includes(selectedTypes[i])) {
+                    containsTypes = false;
+                }
+            }
+
+            for (let i = 0; i < selectedWeaknesses.length; i++) {
+                if (!poke.weaknesses.includes(selectedWeaknesses[i])) {
+                    containsWeaknesses = false;
+                }
+            }
+
+            return (
+                poke.name.toLowerCase().includes(name)
+                && containsTypes
+                && containsWeaknesses
+            );
+        });
     }
 
     render() {
-        const pokemon = this.getFilteredPokemon();
+        const { types, weaknesses } = this.state;
+
+        const filteredPokemon = this.getFilteredPokemon();
 
         return (
             <div>
-                <input
-                    type='text'
-                    name='query'
-                    value={this.state.query}
-                    onChange={this.handleChange} />
-                <Table columns={COLUMNS} data={pokemon} />
+                <Filters
+                    handleCheckboxChange={this.handleCheckboxChange}
+                    handleTextBoxChange={this.handleTextBoxChange}
+                    types={types}
+                    weaknesses={weaknesses} />
+                <Table columns={COLUMNS} data={filteredPokemon} />
             </div>
         )
     }
